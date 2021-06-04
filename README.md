@@ -11,11 +11,13 @@ An app for researchers of history and normal people to determine historicity.
 
 ## Description
 
+
+![Schema](./img/schema-large.png)
+
 We made an app based on Neo4j which can provably determine historicity of claims about persons and events based on a graph representation of events, people, places and sources. We can query, based on exhaustive collections of data about people, for relations between the nodes and determine objectively, the answers to questions which political researchers and historians seek. For instance, our app(when fed with enough data) will be able to create nodes for all primary data about Gandhi and can answer some abstract question(based on queries) like 'Was Gandhi racist?' with some certainty and with a list of events/quotes from Gandhi which lead to the conclusion. Other concrete relationship based queries(say, about queries like 'how many prayer meetings did Gandhi hold in Lahore?') are obviously supported by graphdbs.
 
 Similar relationship queries can also be used in related use cases like legal investigations, which may be even automated based on rule engines to find violations in compliance. The common theme in these use cases is that the investigators/researchers, by the very nature of their job, study the events/people/sources in a structured manner. They also do not want to arrive at conclusions based on the idea of 'relevance' which is offered by text based search. For instance, for a researcher studying Gandhi's quotes, he/she would want to avoid the noise of all events where Gandhi's name came up in conversations between third persons. A traditional Google search or any search based research into these topics will add the noise and will not improve the researcher's understanding based on the traditional linear study they do. And it helps in a legal investigation/proceeding if people's punishment/penalty is not based on probability.
 
-![Schema](./img/schema-large.png)
 
 
 ## Background
