@@ -15,7 +15,7 @@ We made an app based on Neo4j which can provably determine historicity of claims
 
 Similar relationship queries can also be used in related use cases like legal investigations, which may be even automated based on rule engines to find violations in compliance. The common theme in these use cases is that the investigators/researchers, by the very nature of their job, study the events/people/sources in a structured manner. They also do not want to arrive at conclusions based on the idea of 'relevance' which is offered by text based search. For instance, for a researcher studying Gandhi's quotes, he/she would want to avoid the noise of all events where Gandhi's name came up in conversations between third persons. A traditional Google search or any search based research into these topics will add the noise and will not improve the researcher's understanding based on the traditional linear study they do. And it helps in a legal investigation/proceeding if people's punishment/penalty is not based on probability.
 
-![Schema](./img/schema.png)
+![Schema](./img/schema-large.png)
 
 
 ## Background
