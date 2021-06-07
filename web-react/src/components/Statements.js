@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -7,7 +7,6 @@ import TableRow from '@material-ui/core/TableRow'
 import { useParams } from 'react-router-dom'
 import { useQuery, gql } from '@apollo/client'
 import Title from './Title'
-import { NoteContext } from '../App'
 // import moment from 'moment'
 
 import { AppBar, Tab, Tabs } from '@material-ui/core'
@@ -20,7 +19,7 @@ const GET_PROFILE_QUERY = gql`
         title
         year
         publisher
-        statement {
+        statements {
           content
         }
       }
@@ -30,7 +29,7 @@ const GET_PROFILE_QUERY = gql`
         at {
           name
         }
-        statement {
+        statements {
           content
         }
       }
@@ -44,7 +43,6 @@ export default function PersonDetails() {
     variables: { name },
   })
   const [value, setValue] = useState(0)
-  const notes = useContext(NoteContext)
 
   if (error) return <p>Error</p>
   if (loading) return <p>Loading</p>
@@ -63,42 +61,23 @@ export default function PersonDetails() {
   const getStatements = () => {
     const meetings = data.people[0].meetings
     const books = data.people[0].books
-    console.log(data)
-
-    let list = []
-    list = list.concat(
-      meetings.flatMap((m) =>
-        m.statement
-          ? m.statement.map((s) => {
-              return { statement: s.content, meeting: m }
-            })
-          : []
-      )
-    )
-    list = list.concat(
-      books.flatMap((b) =>
-        b.statement
-          ? b.statement.map((s) => {
-              return { statement: s.content, book: b }
-            })
-          : []
-      )
-    )
-    return list
+    const list = []
+    list.concat(meetings.map(m => m.statements.map(s => { return { statement: s.content, meeting: m } })))
+    list.concat(books.map(b => b.statements.map(s => { return { statement: s.content, book: b } })))
+    console.log(list)
+    return list;
   }
 
-  const addNote = (note) => {
-    notes.push(note)
-  }
+  const statements = getStatements();
 
   return (
     <React.Fragment>
       <Title>{name}</Title>
       <AppBar position="static">
         <Tabs value={value} onChange={handleChange} aria-label="Tabs">
-          <Tab label="Books" {...a11yProps(0)} />
-          <Tab label="Meetings" {...a11yProps(1)} />
-          <Tab label="Statements" {...a11yProps(2)} />
+          <Tab label="Books" {...a11yProps(0)} key={0} />
+          <Tab label="Meetings" {...a11yProps(1)} key={1} />
+          <Tab label="Statements" {...a11yProps(2)} key={2} />
         </Tabs>
       </AppBar>
       <div key={0} hidden={value !== 0}>
@@ -121,7 +100,7 @@ export default function PersonDetails() {
           </TableBody>
         </Table>
       </div>
-      <div hidden={1 !== value} key={1}>
+      <div key={1} hidden={1 !== value} key={1}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -141,39 +120,21 @@ export default function PersonDetails() {
           </TableBody>
         </Table>
       </div>
-      <div key={2} hidden={2 !== value}>
+      <div key={2} hidden={2 !== value} >
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Statement</TableCell>
               <TableCell>Occasion</TableCell>
               <TableCell>During</TableCell>
               <TableCell>Place</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {getStatements().map((row) => (
-              <TableRow key={row.statement}>
-                <TableCell>{row.statement}</TableCell>
-                {row.meeting ? (
-                  <>
-                    <TableCell>{row.meeting.name}</TableCell>
-                    <TableCell>{row.meeting.during}</TableCell>
-                    <TableCell>{row.meeting.at.name}</TableCell>
-                    <TableCell>
-                      <button onClick={() => addNote(row)}>Cite</button>
-                    </TableCell>
-                  </>
-                ) : (
-                  <>
-                    <TableCell>{row.book.title}</TableCell>
-                    <TableCell>{row.book.year}</TableCell>
-                    <TableCell>{row.book.publisher}</TableCell>
-                    <TableCell>
-                      <button onClick={() => addNote(row)}>Cite</button>
-                    </TableCell>
-                  </>
-                )}
+            {statements.map((row) => (
+              <TableRow key={row.content}>
+                <TableCell>{row.content}</TableCell>
+                <TableCell>{row.during}</TableCell>
+                <TableCell>{row.at.name}</TableCell>
               </TableRow>
             ))}
           </TableBody>

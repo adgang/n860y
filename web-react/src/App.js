@@ -31,6 +31,9 @@ import {
 } from '@material-ui/icons'
 import People from './components/People'
 import PersonDetails from './components/PersonDetails'
+import Notes from './components/Notes'
+
+export const NoteContext = React.createContext([])
 
 function Copyright() {
   return (
@@ -206,12 +209,12 @@ export default function App() {
               </ListItem>
             </Link>
 
-            <Link to="/users" className={classes.navLink}>
+            <Link to="/notes" className={classes.navLink}>
               <ListItem button>
                 <ListItemIcon>
                   <PeopleIcon />
                 </ListItemIcon>
-                <ListItemText primary="Users" />
+                <ListItemText primary="Notes" />
               </ListItem>
             </Link>
           </List>
@@ -219,19 +222,22 @@ export default function App() {
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
-          <Container maxWidth="lg" className={classes.container}>
-            <Switch>
-              <Route exact path="/" component={People} />
-              <Route exact path="/businesses" component={UserList} />
-              <Route exact path="/people" component={People} match="exact" />
-              <Route exact path="/people/:name" component={PersonDetails} />
-              <Route exact path="/users" component={UserList} />
-            </Switch>
+          <NoteContext.Provider value={[]}>
+            <Container maxWidth="lg" className={classes.container}>
+              <Switch>
+                <Route exact path="/" component={People} />
+                <Route exact path="/businesses" component={UserList} />
+                <Route exact path="/people" component={People} match="exact" />
+                <Route exact path="/people/:name" component={PersonDetails} />
+                <Route exact path="/users" component={UserList} />
+                <Route exact path="/notes" component={Notes} />
+              </Switch>
 
-            <Box pt={4}>
-              <Copyright />
-            </Box>
-          </Container>
+              <Box pt={4}>
+                <Copyright />
+              </Box>
+            </Container>
+          </NoteContext.Provider>
         </main>
       </div>
     </Router>
