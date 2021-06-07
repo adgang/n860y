@@ -62,6 +62,20 @@ type Review {
   person: Person @relationship(type: "WROTE", direction: IN)
 }
 
+type Profile {
+  meetings: Meeting[]
+  books: Book[]
+  statements: Statement[]
+}
+
+# type Query {
+#   getProfile(name: String!) {
+#     people(name: $name) {
+#       name
+#     }
+#   }
+# }
+
 type Mutation {
 
   addMeeting(name: String, place: String, when: DateTime): Meeting 

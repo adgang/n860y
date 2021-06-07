@@ -29,13 +29,14 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
 } from '@material-ui/icons'
-import Dashboard from './components/Dashboard'
+import People from './components/People'
+import PersonDetails from './components/PersonDetails'
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <MUILink color="inherit" href="https://grandstack.io/">
+      <MUILink color="inherit" href="/">
         NeoHistoricity
       </MUILink>{' '}
       {new Date().getFullYear()}
@@ -166,8 +167,8 @@ export default function App() {
             </IconButton>
             <img
               className={classes.appBarImage}
-              src="img/grandstack.png"
-              alt="GRANDstack logo"
+              src="/img/type.png"
+              alt="n860y logo"
             />
             <Typography
               component="h1"
@@ -218,8 +219,10 @@ export default function App() {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Switch>
-              <Route exact path="/" component={Dashboard} />
+              <Route exact path="/" component={People} />
               <Route exact path="/businesses" component={UserList} />
+              <Route exact path="/people" component={People} match="exact" />
+              <Route exact path="/people/:name" component={PersonDetails} />
               <Route exact path="/users" component={UserList} />
             </Switch>
 

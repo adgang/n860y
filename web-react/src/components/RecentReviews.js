@@ -31,7 +31,7 @@ export default function RecentReviews() {
 
   return (
     <React.Fragment>
-      <Title>Recent Reviews</Title>
+      <Title>Personalities</Title>
       <Table size="small">
         <TableHead>
           <TableRow>
