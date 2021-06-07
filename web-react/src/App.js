@@ -165,11 +165,13 @@ export default function App() {
             >
               <MenuIcon />
             </IconButton>
-            <img
-              className={classes.appBarImage}
-              src="/img/type.png"
-              alt="n860y logo"
-            />
+            <Link to="/">
+              <img
+                className={classes.appBarImage}
+                src="/img/type.png"
+                alt="n860y logo"
+              />
+            </Link>
             <Typography
               component="h1"
               variant="h6"

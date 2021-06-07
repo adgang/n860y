@@ -19,12 +19,18 @@ const GET_PROFILE_QUERY = gql`
         title
         year
         publisher
+        statement {
+          content
+        }
       }
       meetings {
         name
         during
         at {
           name
+        }
+        statement {
+          content
         }
       }
     }
@@ -52,6 +58,33 @@ export default function PersonDetails() {
     setValue(newValue)
   }
 
+  const getStatements = () => {
+    const meetings = data.people[0].meetings
+    const books = data.people[0].books
+    console.log(data)
+
+    let list = []
+    list = list.concat(
+      meetings.flatMap((m) =>
+        m.statement
+          ? m.statement.map((s) => {
+              return { statement: s.content, meeting: m }
+            })
+          : []
+      )
+    )
+    list = list.concat(
+      books.flatMap((b) =>
+        b.statement
+          ? b.statement.map((s) => {
+              return { statement: s.content, book: b }
+            })
+          : []
+      )
+    )
+    return list
+  }
+
   return (
     <React.Fragment>
       <Title>{name}</Title>
@@ -59,6 +92,7 @@ export default function PersonDetails() {
         <Tabs value={value} onChange={handleChange} aria-label="Tabs">
           <Tab label="Books" {...a11yProps(0)} />
           <Tab label="Meetings" {...a11yProps(1)} />
+          <Tab label="Statements" {...a11yProps(2)} />
         </Tabs>
       </AppBar>
       <div key={0} hidden={value !== 0}>
@@ -96,6 +130,38 @@ export default function PersonDetails() {
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.during}</TableCell>
                 <TableCell>{row.at.name}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div key={2} hidden={2 !== value}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Statement</TableCell>
+              <TableCell>Occasion</TableCell>
+              <TableCell>During</TableCell>
+              <TableCell>Place</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {getStatements().map((row) => (
+              <TableRow key={row.statement}>
+                <TableCell>{row.statement}</TableCell>
+                {row.meeting ? (
+                  <>
+                    <TableCell>{row.meeting.name}</TableCell>
+                    <TableCell>{row.meeting.during}</TableCell>
+                    <TableCell>{row.meeting.at.name}</TableCell>
+                  </>
+                ) : (
+                  <>
+                    <TableCell>{row.book.title}</TableCell>
+                    <TableCell>{row.book.year}</TableCell>
+                    <TableCell>{row.book.publisher}</TableCell>
+                  </>
+                )}
               </TableRow>
             ))}
           </TableBody>
