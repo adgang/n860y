@@ -10,21 +10,29 @@ import Title from './Title'
 // import moment from 'moment'
 
 const GET_PROFILE_QUERY = gql`
-  # query getProfile(name: String!) {
-  {
-    people(options: { limit: 10, sort: { name: ASC } }) {
+  query getProfile($name: String!) {
+    people(where: { name: $name }) {
       name
+      books {
+        title
+        year
+        publisher
+      }
+      meetings {
+        name
+        during
+        at {
+          name
+        }
+      }
     }
-    # books(written_by: { name: $name }) {
-    #   title
-    # }
   }
 `
 
 export default function PersonDetails() {
   const { name } = useParams()
   const { loading, error, data } = useQuery(GET_PROFILE_QUERY, {
-    // variables: { name },
+    variables: { name },
   })
   if (error) return <p>Error</p>
   if (loading) return <p>Loading</p>
@@ -35,13 +43,36 @@ export default function PersonDetails() {
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Name</TableCell>
+            <TableCell>Book</TableCell>
+            <TableCell>Year</TableCell>
+            <TableCell>Publisher</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.people.map((row) => (
-            <TableRow key={row.name}>
+          {data.people[0].books.map((row) => (
+            <TableRow key={row.title}>
+              <TableCell>{row.title}</TableCell>
+              <TableCell>{row.year}</TableCell>
+              <TableCell>{row.publisher}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Occasion</TableCell>
+            <TableCell>During</TableCell>
+            <TableCell>Place</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.people[0].meetings.map((row) => (
+            <TableRow key={row.title}>
               <TableCell>{row.name}</TableCell>
+              <TableCell>{row.during}</TableCell>
+              <TableCell>{row.at.name}</TableCell>
             </TableRow>
           ))}
         </TableBody>

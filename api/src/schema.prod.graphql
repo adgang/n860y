@@ -7,6 +7,7 @@ type Person {
   reviews: [Review]
   books: [Book] @relationship(type: "AUTHORED", direction: OUT)
   reviews: [Review] @relationship(type: "WROTE", direction: OUT)
+  meetings: [Meeting] @relationship(type: "ATTENDED", direction: OUT)
 }
 
 type Book {
@@ -17,11 +18,13 @@ type Book {
   written_at: Place @relationship(type: "VENUE_OF", direction: IN)
   written_by: Person @relationship(type: "AUTHORED", direction: IN)
   source: PrimarySource @relationship(type: "SOURCED_FROM", direction: OUT)
+  statement: [Statement] @relationship(type: "MADE_AT", direction: IN)
 }
 
 type Meeting {
   name: String
   attended_by: [Person] @relationship(type:"ATTENDED", direction: IN)
+  statement: [Statement] @relationship(type: "MADE_AT", direction: IN)
   at: Place @relationship(type:"VENUE_OF", direction: IN)
   during: DateTime
 }
@@ -62,11 +65,11 @@ type Review {
   person: Person @relationship(type: "WROTE", direction: IN)
 }
 
-type Profile {
-  meetings: Meeting[]
-  books: Book[]
-  statements: Statement[]
-}
+# type Profile {
+#   meetings: [Meeting]
+#   books: [Book]
+#   statements: [Statement]
+# }
 
 # type Query {
 #   getProfile(name: String!) {
@@ -74,6 +77,18 @@ type Profile {
 #       name
 #     }
 #   }
+# }
+
+# type Query {
+  # getBooksByPerson(name: String!): Book[]
+  #   @cypher(
+  #     statement: """
+  #       MATCH (b: book)
+  #       MATCH (p:Person {name: $name})
+  #       MATCH (p)-[:AUTHORED]->(b)
+  #       RETURN b
+  #     """
+  #   )
 # }
 
 type Mutation {
