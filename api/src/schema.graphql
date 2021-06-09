@@ -2,35 +2,58 @@ scalar Point
 scalar DateTime
 scalar PointInput
 
-type User {
-  userId: ID!
+type Person {
   name: String
+  reviews: [Review]
+  books: [Book] @relationship(type: "AUTHORED", direction: OUT)
   reviews: [Review] @relationship(type: "WROTE", direction: OUT)
-  avgStars: Float
-    @cypher(
-      statement: "MATCH (this)-[:WROTE]->(r:Review) RETURN toFloat(avg(r.stars))"
-    )
-  numReviews: Int
-    @cypher(statement: "MATCH (this)-[:WROTE]->(r:Review) RETURN COUNT(r)")
-  recommendations(first: Int = 3): [Business]
-    @cypher(
-      statement: "MATCH (this)-[:WROTE]->(r:Review)-[:REVIEWS]->(:Business)<-[:REVIEWS]-(:Review)<-[:WROTE]-(:User)-[:WROTE]->(:Review)-[:REVIEWS]->(rec:Business) WHERE NOT EXISTS( (this)-[:WROTE]->(:Review)-[:REVIEWS]->(rec) ) WITH rec, COUNT(*) AS num ORDER BY num DESC LIMIT $first RETURN rec"
-    )
+  meetings: [Meeting] @relationship(type: "ATTENDED", direction: OUT)
 }
 
-type Business {
-  businessId: ID!
+type Book {
+  title: String
+  isbn: String
+  publisher: String
+  year: Int
+  written_at: Place @relationship(type: "VENUE_OF", direction: IN)
+  written_by: Person @relationship(type: "AUTHORED", direction: IN)
+  source: PrimarySource @relationship(type: "SOURCED_FROM", direction: OUT)
+  statement: [Statement] @relationship(type: "MADE_AT", direction: IN)
+}
+
+type Meeting {
+  name: String
+  attended_by: [Person] @relationship(type:"ATTENDED", direction: IN)
+  statement: [Statement] @relationship(type: "MADE_AT", direction: IN)
+  at: Place @relationship(type:"VENUE_OF", direction: IN)
+  during: DateTime
+}
+
+type Statement {
+  content: String
+  made_at: Occasion @relationship(type: "MADE_AT", direction: OUT)
+  made_by: Person @relationship(type: "MADE_BY", direction: OUT)
+}
+
+type ClaimedStatement {
+  content: String
+  made_at: Occasion @relationship(type: "MADE_AT", direction: OUT)
+  made_by: Person @relationship(type: "MADE_BY", direction: OUT)
+  claimed_in: Statement @relationship(type: "CLAIMED_IN", direction: OUT) 
+}
+
+union Occasion = Meeting | Book
+
+type PrimarySource {
+  videoLink: String
+  imageLink: String
+  libraryLink: String
+}
+
+type Place {
   name: String!
-  address: String
-  city: String
-  state: String
   location: Point
-  avgStars: Float
-    @cypher(
-      statement: "MATCH (this)<-[:REVIEWS]-(r:Review) RETURN coalesce(avg(r.stars),0.0)"
-    )
-  reviews: [Review] @relationship(type: "REVIEWS", direction: IN)
-  categories: [Category] @relationship(type: "IN_CATEGORY", direction: OUT)
+  happenings: [Occasion] @relationship(type: "VENUE_OF", direction: OUT)
 }
 
 type Review {
@@ -38,59 +61,78 @@ type Review {
   stars: Float
   text: String
   date: DateTime
-  business: Business @relationship(type: "REVIEWS", direction: OUT)
-  user: User @relationship(type: "WROTE", direction: IN)
+  about: Book @relationship(type: "ABOUT", direction: OUT)
+  person: Person @relationship(type: "WROTE", direction: IN)
 }
 
-type Category {
-  name: ID!
-  businesses: [Business] @relationship(type: "IN_CATEGORY", direction: IN)
-}
+# type Profile {
+#   meetings: [Meeting]
+#   books: [Book]
+#   statements: [Statement]
+# }
 
-type RatingCount @exclude {
-  stars: Float!
-  count: Int!
-}
+# type Query {
+#   getProfile(name: String!) {
+#     people(name: $name) {
+#       name
+#     }
+#   }
+# }
+
+# type Query {
+  # getBooksByPerson(name: String!): Book[]
+  #   @cypher(
+  #     statement: """
+  #       MATCH (b: book)
+  #       MATCH (p:Person {name: $name})
+  #       MATCH (p)-[:AUTHORED]->(b)
+  #       RETURN b
+  #     """
+  #   )
+# }
 
 type Mutation {
-  mergeBusinessCategory(categories: [String!]!, businessId: ID!): Business
-    @cypher(
-      statement: "MATCH (b:Business {businessId: $businessId}) UNWIND $categories AS cat MERGE (c:Category {name: cat}) MERGE (b)-[:IN_CATEGORY]->(c) RETURN b"
-    )
-  mergeUser(name: String!, userId: ID!): User
-    @cypher(
-      statement: """
-      MERGE (u:User {userId: $userId})
-      ON CREATE SET u.name = $name
-      RETURN u
-      """
-    )
-  mergeBusiness(
-    businessId: ID!
-    name: String!
-    address: String!
-    city: String!
-    state: String!
-    latitude: Float!
-    longitude: Float!
-  ): Business
-    @cypher(
-      statement: """
-      MERGE (b:Business {businessId: $businessId})
-      ON CREATE SET b.name = $name,
-                    b.address = $address,
-                    b.city = $city,
-                    b.state = $state,
-                    b.location = Point({latitude: $latitude, longitude: $longitude})
-      RETURN b
-      """
-    )
-}
 
-type Query {
-  userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
-  ratingsCount: [RatingCount]
+  addMeeting(name: String, place: String, when: DateTime): Meeting 
     @cypher(
-      statement: "MATCH (r:Review) WITH r.stars AS stars, COUNT(*) AS count ORDER BY stars RETURN {stars: stars, count: count}"
+      statement: """
+        MERGE (m:Meeting {name:$name})
+        MERGE (p:Place {name:$place})
+        MERGE (p)-[:VENUE_OF]->(m)
+        ON CREATE SET m.during = DateTime($when)
+        RETURN m
+      """
     )
+
+  addQuoteFromMeeting(personality: String, quote: String, meeting: String): Statement
+    @cypher(
+      statement: """
+      MERGE (p:Person {name: $personality})
+      MERGE (s:Statement {content: $quote})
+      MERGE (m:Meeting {name: $meeting})
+      MERGE (s)-[:MADE_AT]->(m)
+      MERGE (s)-[:MADE_BY]->(p)
+      MERGE (p)-[:ATTENDED]->(m)
+      RETURN s
+      """
+    )
+
+  addQuoteFromBook(personality: String, quote: String, book: BookCreateInput, source: String): Statement
+    @cypher(
+      statement: """
+      MERGE (p:Person {name: $personality})
+      MERGE (s:Statement {content: $quote})
+      MERGE (ps:PrimarySource {libraryLink: $source})
+      MERGE (b:Book {title: $book.title})
+      MERGE (s)-[:MADE_AT]->(b)
+      MERGE (s)-[:MADE_BY]->(p)
+      MERGE (b)-[:SOURCED_FROM]->(ps)
+      MERGE (p)-[:AUTHORED]->(b)
+      SET b.isbn = $book.isbn
+      SET b.publisher = $book.publisher
+      SET b.year = $book.year
+      RETURN s
+      """
+    )
+
 }
